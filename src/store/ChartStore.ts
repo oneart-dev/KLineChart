@@ -189,7 +189,15 @@ export default class ChartStore {
       this._timeScaleStore.setLoading(false)
       this._timeScaleStore.setMore(more ?? true)
       const isFirstAdd = this._dataList.length === 0
-      this._dataList = data.concat(this._dataList)
+      const lastTimestamp = this._dataList[this._dataList.length - 1]?.timestamp ?? 0
+      const newTimestamp = data[0]?.timestamp ?? 0
+
+      if (lastTimestamp < newTimestamp) {
+        this._dataList = this._dataList.concat(data)
+      } else {
+        this._dataList = data.concat(this._dataList)
+      }
+
       if (isFirstAdd) {
         this._timeScaleStore.resetOffsetRightDistance()
       }
