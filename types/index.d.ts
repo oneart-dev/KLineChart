@@ -976,7 +976,7 @@ export interface Chart {
 	clearData: () => void;
 	getDataList: () => KLineData[];
 	applyNewData: (dataList: KLineData[], more?: boolean, callback?: () => void) => void;
-	applyMoreData: (dataList: KLineData[], more?: boolean, callback?: () => void) => void;
+	applyMoreData: (dataList: KLineData[], more?: boolean, callback?: () => void, pos?: number) => void;
 	updateData: (data: KLineData, callback?: () => void) => void;
 	loadMore: (cb: LoadMoreCallback) => void;
 	loadMoreForward: (cb: LoadMoreCallback) => void;

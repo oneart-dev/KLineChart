@@ -6644,21 +6644,17 @@ var ChartStore = /** @class */ (function () {
             var isFirstAdd = this._dataList.length === 0;
             var lastTimestamp = (_b = (_a = this._dataList[this._dataList.length - 1]) === null || _a === void 0 ? void 0 : _a.timestamp) !== null && _b !== void 0 ? _b : 0;
             var newTimestamp = (_d = (_c = data[0]) === null || _c === void 0 ? void 0 : _c.timestamp) !== null && _d !== void 0 ? _d : 0;
-            console.log('lastTimestamp', lastTimestamp);
-            console.log('newTimestamp', newTimestamp);
-            console.log('isFirstAdd', isFirstAdd);
-            console.log('lastTimestamp < newTimestamp', lastTimestamp < newTimestamp);
             if (lastTimestamp < newTimestamp) {
                 this._dataList = this._dataList.concat(data);
+                this.adjustVisibleDataList();
             }
             else {
                 this._dataList = data.concat(this._dataList);
+                if (isFirstAdd) {
+                    this._timeScaleStore.resetOffsetRightDistance();
+                }
+                this._timeScaleStore.adjustVisibleRange();
             }
-            console.log('this._dataList', this._dataList);
-            if (isFirstAdd) {
-                this._timeScaleStore.resetOffsetRightDistance();
-            }
-            this._timeScaleStore.adjustVisibleRange();
         }
         else {
             var dataSize = this._dataList.length;
@@ -12418,9 +12414,9 @@ var ChartImp = /** @class */ (function () {
             this.applyMoreData(dataList, more, callback);
         }
     };
-    ChartImp.prototype.applyMoreData = function (dataList, more, callback) {
+    ChartImp.prototype.applyMoreData = function (dataList, more, callback, pos) {
         var _this = this;
-        this._chartStore.addData(dataList, 0, more);
+        this._chartStore.addData(dataList, pos !== null && pos !== void 0 ? pos : 0, more);
         if (dataList.length > 0) {
             this._chartStore.getIndicatorStore().calcInstance().then(function (_) {
                 _this.adjustPaneViewport(false, true, true, true);
