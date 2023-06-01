@@ -194,14 +194,15 @@ export default class ChartStore {
 
       if (lastTimestamp < newTimestamp) {
         this._dataList = this._dataList.concat(data)
+        this.adjustVisibleDataList()
       } else {
         this._dataList = data.concat(this._dataList)
-      }
 
-      if (isFirstAdd) {
-        this._timeScaleStore.resetOffsetRightDistance()
+        if (isFirstAdd) {
+          this._timeScaleStore.resetOffsetRightDistance()
+        }
+        this._timeScaleStore.adjustVisibleRange()
       }
-      this._timeScaleStore.adjustVisibleRange()
     } else {
       const dataSize = this._dataList.length
       if (pos >= dataSize) {
