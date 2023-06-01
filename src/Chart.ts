@@ -87,6 +87,7 @@ export interface Chart {
   applyMoreData: (dataList: KLineData[], more?: boolean, callback?: () => void) => void
   updateData: (data: KLineData, callback?: () => void) => void
   loadMore: (cb: LoadMoreCallback) => void
+  loadMoreForward: (cb: LoadMoreCallback) => void
   createIndicator: (value: string | IndicatorCreate, isStack?: boolean, paneOptions?: PaneOptions, callback?: () => void) => Nullable<string>
   overrideIndicator: (override: IndicatorCreate, paneId?: string, callback?: () => void) => void
   getIndicatorByPaneId: (paneId?: string, name?: string) => Nullable<Indicator> | Nullable<Map<string, Indicator>> | Map<string, Map<string, Indicator>>
@@ -522,6 +523,10 @@ export default class ChartImp implements Chart {
 
   loadMore (cb: LoadMoreCallback): void {
     this._chartStore.getTimeScaleStore().setLoadMoreCallback(cb)
+  }
+
+  loadMoreForward (cb: LoadMoreCallback): void {
+    this._chartStore.getTimeScaleStore().setLoadMoreForwardCallback(cb)
   }
 
   createIndicator (value: string | IndicatorCreate, isStack?: boolean, paneOptions?: Nullable<PaneOptions>, callback?: () => void): Nullable<string> {

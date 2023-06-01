@@ -71,6 +71,11 @@ export default class TimeScaleStore {
   private _loadMoreCallback: Nullable<LoadMoreCallback> = null
 
   /**
+   * Load more data forward callback
+   */
+  private _loadMoreForwardCallback: Nullable<LoadMoreCallback> = null
+
+  /**
    * Whether there are more flag
    */
   private _more: boolean = true
@@ -161,6 +166,10 @@ export default class TimeScaleStore {
       this._loading = true
       const firstData = dataList[0]
       this._loadMoreCallback(firstData?.timestamp ?? null)
+    } else if (to === dataCount && this._more && !this._loading && this._loadMoreForwardCallback !== null) {
+      this._loading = true
+      const lastData = dataList[dataCount - 1]
+      this._loadMoreForwardCallback(lastData?.timestamp ?? null)
     }
   }
 
@@ -373,6 +382,11 @@ export default class TimeScaleStore {
 
   setLoadMoreCallback (callback: LoadMoreCallback): TimeScaleStore {
     this._loadMoreCallback = callback
+    return this
+  }
+
+  setLoadMoreForwardCallback (callback: LoadMoreCallback): TimeScaleStore {
+    this._loadMoreForwardCallback = callback
     return this
   }
 
