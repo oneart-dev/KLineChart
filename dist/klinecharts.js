@@ -1252,7 +1252,11 @@ var TimeScaleStore = /** @class */ (function () {
         var rateSpace = Math.floor(this._barSpace * 0.82);
         var floorSpace = Math.floor(this._barSpace);
         var optimalSpace = Math.min(rateSpace, floorSpace - 1);
-        return Math.max(1, optimalSpace);
+        // If the optimal space is an odd number halfGapBar will be x.5, which will cause blur fix to fail
+        if (optimalSpace % 2 !== 0) {
+            optimalSpace -= 1;
+        }
+        return Math.max(2, optimalSpace);
     };
     /**
      * adjust visible range
@@ -7549,7 +7553,7 @@ var CandleBarView = /** @class */ (function (_super) {
                     name: 'rect',
                     attrs: {
                         x: x - halfGapBar + 0.5,
-                        y: priceY[1],
+                        y: priceY[1] + 0.5,
                         width: gapBar - 1,
                         height: barHeight
                     },
@@ -7574,7 +7578,7 @@ var CandleBarView = /** @class */ (function (_super) {
                     name: 'rect',
                     attrs: {
                         x: x - halfGapBar + 0.5,
-                        y: priceY[1],
+                        y: priceY[1] + 0.5,
                         width: gapBar - 1,
                         height: barHeight
                     },
@@ -7588,8 +7592,8 @@ var CandleBarView = /** @class */ (function (_super) {
                     name: 'wick',
                     attrs: {
                         coordinates: [
-                            { x: x, y: priceY[0] },
-                            { x: x, y: priceY[3] }
+                            { x: x - 0.5, y: priceY[0] },
+                            { x: x - 0.5, y: priceY[3] }
                         ]
                     },
                     styles: { color: wickColor }
