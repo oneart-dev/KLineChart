@@ -2,7 +2,6 @@
 /.idea
 /.vscode
 /website
-/dist
 /types
 /docs/.vitepress/cache
 
