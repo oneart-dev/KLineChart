@@ -124,7 +124,7 @@ export default class CandleBarView extends ChildrenView {
           name: 'rect',
           attrs: {
             x: x - halfGapBar + 0.5,
-            y: priceY[1],
+            y: priceY[1] + 0.5,
             width: gapBar - 1,
             height: barHeight
           },
@@ -149,7 +149,7 @@ export default class CandleBarView extends ChildrenView {
           name: 'rect',
           attrs: {
             x: x - halfGapBar + 0.5,
-            y: priceY[1],
+            y: priceY[1] + 0.5,
             width: gapBar - 1,
             height: barHeight
           },
@@ -164,8 +164,8 @@ export default class CandleBarView extends ChildrenView {
           name: 'wick',
           attrs: {
             coordinates: [
-              { x, y: priceY[0] },
-              { x, y: priceY[3] }
+              { x: x - 0.5, y: priceY[0] },
+              { x: x - 0.5, y: priceY[3] }
             ]
           },
           styles: { color: wickColor }
