@@ -2,7 +2,6 @@
 /.idea
 /.vscode
 /website
-/types
 /docs/.vitepress/cache
 
 /package-lock.json
