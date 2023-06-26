@@ -288,8 +288,15 @@ export default class OverlayView<C extends Axis = YAxis> extends View<C> {
       const xAxis = chart.getPaneById(PaneIdConstants.XAXIS)?.getAxisComponent() as Axis
       const dataIndex = xAxis.convertFromPixel(coordinate.x)
       const timestamp = timeScaleStore.dataIndexToTimestamp(dataIndex) ?? undefined
-      point.dataIndex = dataIndex
-      point.timestamp = timestamp
+      const klines = chart.getChartStore().getDataList()
+      if (timestamp === undefined) {
+        const index = dataIndex < 0 ? 0 : dataIndex > klines.length - 1 ? klines.length - 1 : dataIndex
+        point.timestamp = klines[index].timestamp
+        point.dataIndex = index
+      } else {
+        point.dataIndex = dataIndex
+        point.timestamp = timestamp
+      }
     }
     if (this.coordinateToPointValueFlag()) {
       const yAxis = pane.getAxisComponent()
