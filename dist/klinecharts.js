@@ -8421,8 +8421,16 @@ var OverlayView = /** @class */ (function (_super) {
             var xAxis = (_a = chart.getPaneById(PaneIdConstants.XAXIS)) === null || _a === void 0 ? void 0 : _a.getAxisComponent();
             var dataIndex = xAxis.convertFromPixel(coordinate.x);
             var timestamp = (_b = timeScaleStore.dataIndexToTimestamp(dataIndex)) !== null && _b !== void 0 ? _b : undefined;
-            point.dataIndex = dataIndex;
-            point.timestamp = timestamp;
+            var klines = chart.getChartStore().getDataList();
+            if (timestamp === undefined) {
+                var index = dataIndex < 0 ? 0 : dataIndex > klines.length - 1 ? klines.length - 1 : dataIndex;
+                point.timestamp = klines[index].timestamp;
+                point.dataIndex = index;
+            }
+            else {
+                point.dataIndex = dataIndex;
+                point.timestamp = timestamp;
+            }
         }
         if (this.coordinateToPointValueFlag()) {
             var yAxis = pane.getAxisComponent();
