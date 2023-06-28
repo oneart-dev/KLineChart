@@ -7104,6 +7104,8 @@ function getTextRect(attrs, styles, textWidth) {
             break;
         }
     }
+    startX = Math.round(startX) + 0.5;
+    startY = Math.round(startY) + 0.5;
     return { x: startX, y: startY, width: paddingLeft + textWidth + paddingRight, height: paddingTop + textHeight + paddingBottom };
 }
 function checkCoordinateOnText(coordinate, attrs, styles) {
@@ -7119,6 +7121,8 @@ function drawText(ctx, attrs, styles) {
     ctx.textAlign = align;
     ctx.textBaseline = baseline;
     ctx.font = createFont(size, weight, family);
+    x = Math.round(x) + 0.5;
+    y = Math.round(y) + 0.5;
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
 }
