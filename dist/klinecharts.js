@@ -9280,6 +9280,7 @@ var CandleTooltipView = /** @class */ (function (_super) {
         var current = data.current;
         var prevClose = (_b = (_a = data.prev) === null || _a === void 0 ? void 0 : _a.close) !== null && _b !== void 0 ? _b : current.close;
         var changeValue = current.close - prevClose;
+        var amplitude = (current.high - current.low) / current.high * 100;
         var pricePrecision = precision.price, volumePrecision = precision.volume;
         var mapping = {
             '{time}': customApi.formatDate(dateTimeFormat, current.timestamp, 'YYYY-MM-DD HH:mm', exports.FormatDateType.Tooltip),
@@ -9288,17 +9289,18 @@ var CandleTooltipView = /** @class */ (function (_super) {
             '{low}': formatThousands(formatPrecision(current.low, pricePrecision), thousandsSeparator),
             '{close}': formatThousands(formatPrecision(current.close, pricePrecision), thousandsSeparator),
             '{volume}': formatThousands(customApi.formatBigNumber(formatPrecision((_c = current.volume) !== null && _c !== void 0 ? _c : tooltipStyles.defaultValue, volumePrecision)), thousandsSeparator),
-            '{change}': prevClose === 0 ? tooltipStyles.defaultValue : "".concat(formatPrecision(changeValue / prevClose * 100), "%")
+            '{change}': prevClose === 0 ? tooltipStyles.defaultValue : "".concat(formatPrecision(changeValue / prevClose * 100), "%"),
+            '{amplitude}': "".concat(formatPrecision(amplitude), "%")
         };
         var labelValues = (_e = (isFunction(tooltipStyles.custom)
             ? (_d = tooltipStyles.custom) === null || _d === void 0 ? void 0 : _d.call(tooltipStyles, data, styles)
             : tooltipStyles.custom)) !== null && _e !== void 0 ? _e : [
-            { title: 'time', value: '{time}' },
-            { title: 'open', value: '{open}' },
-            { title: 'high', value: '{high}' },
-            { title: 'low', value: '{low}' },
-            { title: 'close', value: '{close}' },
-            { title: 'volume', value: '{volume}' }
+            { title: 'T', value: '{time}' },
+            { title: 'O', value: '{open}' },
+            { title: 'H', value: '{high}' },
+            { title: 'L', value: '{low}' },
+            { title: 'C', value: '{close}' },
+            { title: 'V', value: '{volume}' }
         ];
         return labelValues.map(function (_a) {
             var _b;
