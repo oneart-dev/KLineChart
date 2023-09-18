@@ -444,12 +444,12 @@ export default class CandleTooltipView extends IndicatorTooltipView {
         ? tooltipStyles.custom?.(data, styles)
         : tooltipStyles.custom
     ) ?? [
-      { title: 'time', value: '{time}' },
-      { title: 'open', value: '{open}' },
-      { title: 'high', value: '{high}' },
-      { title: 'low', value: '{low}' },
-      { title: 'close', value: '{close}' },
-      { title: 'volume', value: '{volume}' }
+      { title: 'T', value: '{time}' },
+      { title: 'O', value: '{open}' },
+      { title: 'H', value: '{high}' },
+      { title: 'L', value: '{low}' },
+      { title: 'C', value: '{close} ({change})' },
+      { title: 'V', value: '{volume}' }
     ]
     return labelValues.map(({ title, value }) => {
       let t: TooltipDataChild = { text: '', color: '' }
