@@ -426,6 +426,7 @@ export default class CandleTooltipView extends IndicatorTooltipView {
     const current = data.current
     const prevClose = data.prev?.close ?? current.close
     const changeValue = current.close - prevClose
+    const amplitude = (current.high - current.low) / current.high * 100
     const { price: pricePrecision, volume: volumePrecision } = precision
     const mapping = {
       '{time}': customApi.formatDate(dateTimeFormat, current.timestamp, 'YYYY-MM-DD HH:mm', FormatDateType.Tooltip),
@@ -437,7 +438,8 @@ export default class CandleTooltipView extends IndicatorTooltipView {
         customApi.formatBigNumber(formatPrecision(current.volume ?? tooltipStyles.defaultValue, volumePrecision)),
         thousandsSeparator
       ),
-      '{change}': prevClose === 0 ? tooltipStyles.defaultValue : `${formatPrecision(changeValue / prevClose * 100)}%`
+      '{change}': prevClose === 0 ? tooltipStyles.defaultValue : `${formatPrecision(changeValue / prevClose * 100)}%`,
+      '{amplitude}': `${formatPrecision(amplitude)}%`
     }
     const labelValues = (
       isFunction(tooltipStyles.custom)
@@ -448,7 +450,7 @@ export default class CandleTooltipView extends IndicatorTooltipView {
       { title: 'O', value: '{open}' },
       { title: 'H', value: '{high}' },
       { title: 'L', value: '{low}' },
-      { title: 'C', value: '{close} ({change})' },
+      { title: 'C', value: '{close}' },
       { title: 'V', value: '{volume}' }
     ]
     return labelValues.map(({ title, value }) => {
