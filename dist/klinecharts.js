@@ -1190,7 +1190,7 @@ function getDefaultVisibleRange() {
  */
 var BarSpaceLimitContants = {
     MIN: 1,
-    MAX: 50
+    MAX: 50,
 };
 var DEFAULT_BAR_SPACE = 6;
 var DEFAULT_OFFSET_RIGHT_DISTANCE = 50;
@@ -1239,7 +1239,10 @@ var TimeScaleStore = /** @class */ (function () {
         /**
          * Scroll to the leftmost and rightmost visible bar
          */
-        this._minVisibleBarCount = { left: 2, right: 2 };
+        this._minVisibleBarCount = {
+            left: 2,
+            right: 2,
+        };
         /**
          * Start and end points of visible area data index
          */
@@ -1282,12 +1285,19 @@ var TimeScaleStore = /** @class */ (function () {
         if (from < 0) {
             from = 0;
         }
-        var realFrom = this._offsetRightBarCount > 0 ? Math.round(dataCount + this._offsetRightBarCount - barCount) - 1 : from;
+        var realFrom = this._offsetRightBarCount > 0
+            ? Math.round(dataCount + this._offsetRightBarCount - barCount) - 1
+            : from;
         this._visibleRange = { from: from, to: to, realFrom: realFrom, realTo: to };
-        this._chartStore.getActionStore().execute(exports.ActionType.OnVisibleRangeChange, this._visibleRange);
+        this._chartStore
+            .getActionStore()
+            .execute(exports.ActionType.OnVisibleRangeChange, this._visibleRange);
         this._chartStore.adjustVisibleDataList();
         // More processing and loading, more loading if there are callback methods and no data is being loaded
-        if (from === 0 && this._more && !this._loading && this._loadMoreCallback !== null) {
+        if (from === 0 &&
+            this._more &&
+            !this._loading &&
+            this._loadMoreCallback !== null) {
             this._loading = true;
             var firstData = dataList[0];
             this._loadMoreCallback((_a = firstData === null || firstData === void 0 ? void 0 : firstData.timestamp) !== null && _a !== void 0 ? _a : null);
@@ -1307,22 +1317,22 @@ var TimeScaleStore = /** @class */ (function () {
     TimeScaleStore.prototype._buildDateTimeFormat = function (timezone) {
         var options = {
             hour12: false,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
         };
         if (timezone !== undefined) {
             options.timeZone = timezone;
         }
         var dateTimeFormat = null;
         try {
-            dateTimeFormat = new Intl.DateTimeFormat('en', options);
+            dateTimeFormat = new Intl.DateTimeFormat("en", options);
         }
         catch (e) {
-            logWarn('', '', 'Timezone is error!!!');
+            logWarn("", "", "Timezone is error!!!");
         }
         return dateTimeFormat;
     };
@@ -1340,11 +1350,13 @@ var TimeScaleStore = /** @class */ (function () {
             bar: this._barSpace,
             halfBar: this._barSpace / 2,
             gapBar: this._gapBarSpace,
-            halfGapBar: this._gapBarSpace / 2
+            halfGapBar: this._gapBarSpace / 2,
         };
     };
     TimeScaleStore.prototype.setBarSpace = function (barSpace, adjustBeforeFunc) {
-        if (barSpace < BarSpaceLimitContants.MIN || barSpace > BarSpaceLimitContants.MAX || this._barSpace === barSpace) {
+        if (barSpace < BarSpaceLimitContants.MIN ||
+            barSpace > BarSpaceLimitContants.MAX ||
+            this._barSpace === barSpace) {
             return;
         }
         this._barSpace = barSpace;
@@ -1408,13 +1420,28 @@ var TimeScaleStore = /** @class */ (function () {
         }
         var distanceBarCount = distance / this._barSpace;
         this._chartStore.getActionStore().execute(exports.ActionType.OnScroll);
-        this._offsetRightBarCount = this._startScrollOffsetRightBarCount - distanceBarCount;
+        this._offsetRightBarCount =
+            this._startScrollOffsetRightBarCount - distanceBarCount;
         this.adjustVisibleRange();
         this._chartStore.getCrosshairStore().recalculate(true);
         this._chartStore.getChart().adjustPaneViewport(false, true, true, true);
     };
     TimeScaleStore.prototype.getDataByDataIndex = function (dataIndex) {
         var _a;
+        if (dataIndex < 0) {
+            return null;
+        }
+        var dataList = this._chartStore.getDataList();
+        var length = dataList.length;
+        if (dataIndex >= length) {
+            var last = dataList[length - 1];
+            var beforeLast = dataList[length - 2];
+            var diff = last.timestamp - beforeLast.timestamp;
+            var newTimestamp = last.timestamp + diff * (dataIndex - length + 1);
+            return {
+                timestamp: newTimestamp,
+            };
+        }
         return (_a = this._chartStore.getDataList()[dataIndex]) !== null && _a !== void 0 ? _a : null;
     };
     TimeScaleStore.prototype.coordinateToFloatIndex = function (x) {
@@ -1433,7 +1460,15 @@ var TimeScaleStore = /** @class */ (function () {
         if (dataList.length === 0) {
             return 0;
         }
-        return binarySearchNearest(dataList, 'timestamp', timestamp);
+        var length = dataList.length;
+        if (timestamp >= dataList[length - 1].timestamp) {
+            var last = dataList[length - 1];
+            var beforeLast = dataList[length - 2];
+            var diff = last.timestamp - beforeLast.timestamp;
+            var width = (timestamp - last.timestamp) / diff;
+            return length + Math.floor(width);
+        }
+        return binarySearchNearest(dataList, "timestamp", timestamp);
     };
     TimeScaleStore.prototype.dataIndexToCoordinate = function (dataIndex) {
         var dataCount = this._chartStore.getDataList().length;
@@ -1457,7 +1492,8 @@ var TimeScaleStore = /** @class */ (function () {
         var floatIndex = this.coordinateToFloatIndex(coordinate.x);
         var barSpace = this._barSpace + scale * (this._barSpace / 10);
         this.setBarSpace(barSpace, function () {
-            _this._offsetRightBarCount += (floatIndex - _this.coordinateToFloatIndex(coordinate === null || coordinate === void 0 ? void 0 : coordinate.x));
+            _this._offsetRightBarCount +=
+                floatIndex - _this.coordinateToFloatIndex(coordinate === null || coordinate === void 0 ? void 0 : coordinate.x);
         });
     };
     TimeScaleStore.prototype.setZoomEnabled = function (enabled) {
@@ -8205,7 +8241,7 @@ var OverlayView = /** @class */ (function (_super) {
         var pane = this.getWidget().getPane();
         var paneId = pane.getId();
         var overlayStore = pane.getChart().getChartStore().getOverlayStore();
-        this.registerEvent('mouseMoveEvent', function (event) {
+        this.registerEvent("mouseMoveEvent", function (event) {
             var _a;
             var progressInstanceInfo = overlayStore.getProgressInstanceInfo();
             if (progressInstanceInfo !== null) {
@@ -8225,10 +8261,15 @@ var OverlayView = /** @class */ (function (_super) {
             }
             overlayStore.setHoverInstanceInfo({
                 paneId: paneId,
-                instance: null, figureType: 0 /* EventOverlayInfoFigureType.None */, figureKey: '', figureIndex: -1, attrsIndex: -1
+                instance: null,
+                figureType: 0 /* EventOverlayInfoFigureType.None */,
+                figureKey: "",
+                figureIndex: -1,
+                attrsIndex: -1,
             }, event);
             return false;
-        }).registerEvent('mouseClickEvent', function (event) {
+        })
+            .registerEvent("mouseClickEvent", function (event) {
             var _a, _b;
             var progressInstanceInfo = overlayStore.getProgressInstanceInfo();
             if (progressInstanceInfo !== null) {
@@ -8253,10 +8294,15 @@ var OverlayView = /** @class */ (function (_super) {
             }
             overlayStore.setClickInstanceInfo({
                 paneId: paneId,
-                instance: null, figureType: 0 /* EventOverlayInfoFigureType.None */, figureKey: '', figureIndex: -1, attrsIndex: -1
+                instance: null,
+                figureType: 0 /* EventOverlayInfoFigureType.None */,
+                figureKey: "",
+                figureIndex: -1,
+                attrsIndex: -1,
             }, event);
             return false;
-        }).registerEvent('mouseDoubleClickEvent', function (event) {
+        })
+            .registerEvent("mouseDoubleClickEvent", function (event) {
             var _a;
             var progressInstanceInfo = overlayStore.getProgressInstanceInfo();
             if (progressInstanceInfo !== null) {
@@ -8275,7 +8321,8 @@ var OverlayView = /** @class */ (function (_super) {
                 return _this._figureMouseClickEvent(overlay, 1 /* EventOverlayInfoFigureType.Point */, "".concat(OVERLAY_FIGURE_KEY_PREFIX, "point_").concat(index), index, 0)(event);
             }
             return false;
-        }).registerEvent('mouseRightClickEvent', function (event) {
+        })
+            .registerEvent("mouseRightClickEvent", function (event) {
             var progressInstanceInfo = overlayStore.getProgressInstanceInfo();
             if (progressInstanceInfo !== null) {
                 var overlay = progressInstanceInfo.instance;
@@ -8285,7 +8332,8 @@ var OverlayView = /** @class */ (function (_super) {
                 }
             }
             return false;
-        }).registerEvent('mouseUpEvent', function (event) {
+        })
+            .registerEvent("mouseUpEvent", function (event) {
             var _a;
             var _b = overlayStore.getPressedInstanceInfo(), instance = _b.instance, figureIndex = _b.figureIndex, figureKey = _b.figureKey;
             if (instance !== null) {
@@ -8293,10 +8341,15 @@ var OverlayView = /** @class */ (function (_super) {
             }
             overlayStore.setPressedInstanceInfo({
                 paneId: paneId,
-                instance: null, figureType: 0 /* EventOverlayInfoFigureType.None */, figureKey: '', figureIndex: -1, attrsIndex: -1
+                instance: null,
+                figureType: 0 /* EventOverlayInfoFigureType.None */,
+                figureKey: "",
+                figureIndex: -1,
+                attrsIndex: -1,
             });
             return false;
-        }).registerEvent('pressedMouseMoveEvent', function (event) {
+        })
+            .registerEvent("pressedMouseMoveEvent", function (event) {
             var _a, _b;
             var _c = overlayStore.getPressedInstanceInfo(), instance = _c.instance, figureType = _c.figureType, figureIndex = _c.figureIndex, figureKey = _c.figureKey;
             if (instance !== null) {
@@ -8307,7 +8360,11 @@ var OverlayView = /** @class */ (function (_super) {
                             instance.eventPressedPointMove(point, figureIndex);
                         }
                         else {
-                            instance.eventPressedOtherMove(point, _this.getWidget().getPane().getChart().getChartStore().getTimeScaleStore());
+                            instance.eventPressedOtherMove(point, _this.getWidget()
+                                .getPane()
+                                .getChart()
+                                .getChartStore()
+                                .getTimeScaleStore());
                         }
                     }
                 }
@@ -8336,7 +8393,7 @@ var OverlayView = /** @class */ (function (_super) {
                     mouseDownEvent: this._figureMouseDownEvent(overlay, figureType, figureKey, figureIndex, attrsIndex),
                     mouseClickEvent: this._figureMouseClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex),
                     mouseRightClickEvent: this._figureMouseRightClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex),
-                    mouseDoubleClickEvent: this._figureMousedbClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex)
+                    mouseDoubleClickEvent: this._figureMousedbClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex),
                 };
             }
             eventHandler = {};
@@ -8345,19 +8402,23 @@ var OverlayView = /** @class */ (function (_super) {
             //   'tapEvent', 'doubleTapEvent', 'mouseDownEvent',
             //   'touchStartEvent', 'mouseMoveEvent', 'touchMoveEvent'
             // ]
-            if (!eventTypes.includes('mouseMoveEvent') && !eventTypes.includes('touchMoveEvent')) {
+            if (!eventTypes.includes("mouseMoveEvent") &&
+                !eventTypes.includes("touchMoveEvent")) {
                 eventHandler.mouseMoveEvent = this._figureMouseMoveEvent(overlay, figureType, figureKey, figureIndex, attrsIndex);
             }
-            if (!eventTypes.includes('mouseDownEvent') && !eventTypes.includes('touchStartEvent')) {
+            if (!eventTypes.includes("mouseDownEvent") &&
+                !eventTypes.includes("touchStartEvent")) {
                 eventHandler.mouseDownEvent = this._figureMouseDownEvent(overlay, figureType, figureKey, figureIndex, attrsIndex);
             }
-            if (!eventTypes.includes('mouseClickEvent') && !eventTypes.includes('tapEvent')) {
+            if (!eventTypes.includes("mouseClickEvent") &&
+                !eventTypes.includes("tapEvent")) {
                 eventHandler.mouseClickEvent = this._figureMouseClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex);
             }
-            if (!eventTypes.includes('mouseDoubleClickEvent') && !eventTypes.includes('doubleTapEvent')) {
+            if (!eventTypes.includes("mouseDoubleClickEvent") &&
+                !eventTypes.includes("doubleTapEvent")) {
                 eventHandler.mouseDoubleClickEvent = this._figureMousedbClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex);
             }
-            if (!eventTypes.includes('mouseRightClickEvent')) {
+            if (!eventTypes.includes("mouseRightClickEvent")) {
                 eventHandler.mouseRightClickEvent = this._figureMouseRightClickEvent(overlay, figureType, figureKey, figureIndex, attrsIndex);
             }
         }
@@ -8368,7 +8429,14 @@ var OverlayView = /** @class */ (function (_super) {
         return function (event) {
             var pane = _this.getWidget().getPane();
             var overlayStore = pane.getChart().getChartStore().getOverlayStore();
-            overlayStore.setHoverInstanceInfo({ paneId: pane.getId(), instance: overlay, figureType: figureType, figureKey: figureKey, figureIndex: figureIndex, attrsIndex: attrsIndex }, event);
+            overlayStore.setHoverInstanceInfo({
+                paneId: pane.getId(),
+                instance: overlay,
+                figureType: figureType,
+                figureKey: figureKey,
+                figureIndex: figureIndex,
+                attrsIndex: attrsIndex,
+            }, event);
             return true;
         };
     };
@@ -8381,7 +8449,14 @@ var OverlayView = /** @class */ (function (_super) {
             var overlayStore = pane.getChart().getChartStore().getOverlayStore();
             overlay.startPressedMove(_this._coordinateToPoint(overlay, event));
             (_a = overlay.onPressedMoveStart) === null || _a === void 0 ? void 0 : _a.call(overlay, __assign({ overlay: overlay, figureIndex: figureIndex, figureKey: figureKey }, event));
-            overlayStore.setPressedInstanceInfo({ paneId: paneId, instance: overlay, figureType: figureType, figureKey: figureKey, figureIndex: figureIndex, attrsIndex: attrsIndex });
+            overlayStore.setPressedInstanceInfo({
+                paneId: paneId,
+                instance: overlay,
+                figureType: figureType,
+                figureKey: figureKey,
+                figureIndex: figureIndex,
+                attrsIndex: attrsIndex,
+            });
             return true;
         };
     };
@@ -8391,7 +8466,14 @@ var OverlayView = /** @class */ (function (_super) {
             var pane = _this.getWidget().getPane();
             var paneId = pane.getId();
             var overlayStore = pane.getChart().getChartStore().getOverlayStore();
-            overlayStore.setClickInstanceInfo({ paneId: paneId, instance: overlay, figureType: figureType, figureKey: figureKey, figureIndex: figureIndex, attrsIndex: attrsIndex }, event);
+            overlayStore.setClickInstanceInfo({
+                paneId: paneId,
+                instance: overlay,
+                figureType: figureType,
+                figureKey: figureKey,
+                figureIndex: figureIndex,
+                attrsIndex: attrsIndex,
+            }, event);
             return true;
         };
     };
@@ -8422,24 +8504,19 @@ var OverlayView = /** @class */ (function (_super) {
         var paneId = pane.getId();
         var timeScaleStore = chart.getChartStore().getTimeScaleStore();
         if (this.coordinateToPointTimestampDataIndexFlag()) {
-            var xAxis = (_a = chart.getPaneById(PaneIdConstants.XAXIS)) === null || _a === void 0 ? void 0 : _a.getAxisComponent();
+            var xAxis = (_a = chart
+                .getPaneById(PaneIdConstants.XAXIS)) === null || _a === void 0 ? void 0 : _a.getAxisComponent();
             var dataIndex = xAxis.convertFromPixel(coordinate.x);
             var timestamp = (_b = timeScaleStore.dataIndexToTimestamp(dataIndex)) !== null && _b !== void 0 ? _b : undefined;
-            var klines = chart.getChartStore().getDataList();
-            if (timestamp === undefined) {
-                var index = dataIndex < 0 ? 0 : dataIndex > klines.length - 1 ? klines.length - 1 : dataIndex;
-                point.timestamp = klines[index].timestamp;
-                point.dataIndex = index;
-            }
-            else {
-                point.dataIndex = dataIndex;
-                point.timestamp = timestamp;
-            }
+            point.dataIndex = dataIndex;
+            point.timestamp = timestamp;
         }
         if (this.coordinateToPointValueFlag()) {
             var yAxis = pane.getAxisComponent();
             var value = yAxis.convertFromPixel(coordinate.y);
-            if (overlay.mode !== exports.OverlayMode.Normal && paneId === PaneIdConstants.CANDLE && point.dataIndex !== undefined) {
+            if (overlay.mode !== exports.OverlayMode.Normal &&
+                paneId === PaneIdConstants.CANDLE &&
+                point.dataIndex !== undefined) {
                 var kLineData = timeScaleStore.getDataByDataIndex(point.dataIndex);
                 if (kLineData !== null) {
                     var modeSensitivity = overlay.modeSensitivity;
@@ -8506,7 +8583,12 @@ var OverlayView = /** @class */ (function (_super) {
         return true;
     };
     OverlayView.prototype.dispatchEvent = function (name, event, other) {
-        if (this.getWidget().getPane().getChart().getChartStore().getOverlayStore().isDrawing()) {
+        if (this.getWidget()
+            .getPane()
+            .getChart()
+            .getChartStore()
+            .getOverlayStore()
+            .isDrawing()) {
             return this.onEvent(name, event, other);
         }
         return _super.prototype.dispatchEvent.call(this, name, event, other);
@@ -8522,7 +8604,8 @@ var OverlayView = /** @class */ (function (_super) {
         var paneId = pane.getId();
         var chart = pane.getChart();
         var yAxis = pane.getAxisComponent();
-        var xAxis = (_a = chart.getPaneById(PaneIdConstants.XAXIS)) === null || _a === void 0 ? void 0 : _a.getAxisComponent();
+        var xAxis = (_a = chart
+            .getPaneById(PaneIdConstants.XAXIS)) === null || _a === void 0 ? void 0 : _a.getAxisComponent();
         var bounding = widget.getBounding();
         var chartStore = chart.getChartStore();
         var customApi = chartStore.getCustomApi();
@@ -8580,7 +8663,7 @@ var OverlayView = /** @class */ (function (_super) {
             var attrsArray = [].concat(attrs);
             attrsArray.forEach(function (ats, attrsIndex) {
                 var _a, _b, _c;
-                var evnets = _this._createFigureEvents(overlay, 2 /* EventOverlayInfoFigureType.Other */, (_a = figure.key) !== null && _a !== void 0 ? _a : '', figureIndex, attrsIndex, ignoreEvent);
+                var evnets = _this._createFigureEvents(overlay, 2 /* EventOverlayInfoFigureType.Other */, (_a = figure.key) !== null && _a !== void 0 ? _a : "", figureIndex, attrsIndex, ignoreEvent);
                 var ss = __assign(__assign(__assign({}, defaultStyles[type]), (_b = overlay.styles) === null || _b === void 0 ? void 0 : _b[type]), styles);
                 (_c = _this.createFigure(type, ats, ss, evnets)) === null || _c === void 0 ? void 0 : _c.draw(ctx);
             });
@@ -8597,14 +8680,27 @@ var OverlayView = /** @class */ (function (_super) {
     };
     OverlayView.prototype.getFigures = function (overlay, coordinates, bounding, barSpace, precision, thousandsSeparator, dateTimeFormat, defaultStyles, xAxis, yAxis) {
         var _a, _b;
-        return (_b = (_a = overlay.createPointFigures) === null || _a === void 0 ? void 0 : _a.call(overlay, { overlay: overlay, coordinates: coordinates, bounding: bounding, barSpace: barSpace, precision: precision, thousandsSeparator: thousandsSeparator, dateTimeFormat: dateTimeFormat, defaultStyles: defaultStyles, xAxis: xAxis, yAxis: yAxis })) !== null && _b !== void 0 ? _b : [];
+        return ((_b = (_a = overlay.createPointFigures) === null || _a === void 0 ? void 0 : _a.call(overlay, {
+            overlay: overlay,
+            coordinates: coordinates,
+            bounding: bounding,
+            barSpace: barSpace,
+            precision: precision,
+            thousandsSeparator: thousandsSeparator,
+            dateTimeFormat: dateTimeFormat,
+            defaultStyles: defaultStyles,
+            xAxis: xAxis,
+            yAxis: yAxis,
+        })) !== null && _b !== void 0 ? _b : []);
     };
     OverlayView.prototype.drawDefaultFigures = function (ctx, overlay, coordinates, _bounding, _precision, _dateTimeFormat, _customApi, _thousandsSeparator, defaultStyles, _xAxis, _yAxis, hoverInstanceInfo, clickInstanceInfo) {
         var _this = this;
         var _a, _b;
         if (overlay.needDefaultPointFigure) {
-            if ((((_a = hoverInstanceInfo.instance) === null || _a === void 0 ? void 0 : _a.id) === overlay.id && hoverInstanceInfo.figureType !== 0 /* EventOverlayInfoFigureType.None */) ||
-                (((_b = clickInstanceInfo.instance) === null || _b === void 0 ? void 0 : _b.id) === overlay.id && clickInstanceInfo.figureType !== 0 /* EventOverlayInfoFigureType.None */)) {
+            if ((((_a = hoverInstanceInfo.instance) === null || _a === void 0 ? void 0 : _a.id) === overlay.id &&
+                hoverInstanceInfo.figureType !== 0 /* EventOverlayInfoFigureType.None */) ||
+                (((_b = clickInstanceInfo.instance) === null || _b === void 0 ? void 0 : _b.id) === overlay.id &&
+                    clickInstanceInfo.figureType !== 0 /* EventOverlayInfoFigureType.None */)) {
                 var styles = overlay.styles;
                 var pointStyles_1 = __assign(__assign({}, defaultStyles.point), styles === null || styles === void 0 ? void 0 : styles.point);
                 coordinates.forEach(function (_a, index) {
@@ -8622,8 +8718,8 @@ var OverlayView = /** @class */ (function (_super) {
                         borderColor = pointStyles_1.activeBorderColor;
                         borderSize = pointStyles_1.activeBorderSize;
                     }
-                    (_c = _this.createFigure('circle', { x: x, y: y, r: radius + borderSize }, { color: borderColor }, _this._createFigureEvents(overlay, 1 /* EventOverlayInfoFigureType.Point */, "".concat(OVERLAY_FIGURE_KEY_PREFIX, "point_").concat(index), index, 0))) === null || _c === void 0 ? void 0 : _c.draw(ctx);
-                    (_d = _this.createFigure('circle', { x: x, y: y, r: radius }, { color: color })) === null || _d === void 0 ? void 0 : _d.draw(ctx);
+                    (_c = _this.createFigure("circle", { x: x, y: y, r: radius + borderSize }, { color: borderColor }, _this._createFigureEvents(overlay, 1 /* EventOverlayInfoFigureType.Point */, "".concat(OVERLAY_FIGURE_KEY_PREFIX, "point_").concat(index), index, 0))) === null || _c === void 0 ? void 0 : _c.draw(ctx);
+                    (_d = _this.createFigure("circle", { x: x, y: y, r: radius }, { color: color })) === null || _d === void 0 ? void 0 : _d.draw(ctx);
                 });
             }
         }
